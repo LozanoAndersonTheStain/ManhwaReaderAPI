@@ -1,0 +1,6 @@
+@ManhwaReaderAPI_HostAddress = http://localhost:5193
+
+GET {{ManhwaReaderAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

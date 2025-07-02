@@ -1,0 +1,58 @@
+version: "3.8"
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: manhwa_api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - DB_HOST_IN_DOCKER=db
+      - DB_HOST=db
+      - DOTNET_RUNNING_IN_CONTAINER=true
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - DB_PORT=5432
+      - SSL_MODE=${SSL_MODE}
+      - JWT_KEY=${JWT_KEY}
+      - JWT_ISSUER=${JWT_ISSUER}
+      - JWT_AUDIENCE=${JWT_AUDIENCE}
+      - JWT_EXPIRATION_HOURS=${JWT_EXPIRATION_HOURS}
+    ports:
+      - "5193:5193"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - app_keys:/app/keys
+    networks:
+      - manhwa_network
+
+  db:
+    image: postgres:latest
+    container_name: manhwa_db
+    environment:
+      - POSTGRES_USER=${DB_USERNAME}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+    ports:
+      - "5433:5432" # Changed external port to 5433
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - manhwa_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+  app_keys:
+
+networks:
+  manhwa_network:
+    driver: bridge
